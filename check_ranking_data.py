@@ -5,6 +5,7 @@ import json
 import datetime
 import requests
 import gspread
+import codecs
 import configparser
 from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
@@ -21,13 +22,13 @@ logger.addHandler(handler)
 logger.propagate = False
 
 ### functions ###
-def getLatestDownloadedDirName(downloadsDirPath):
+def checkLatestDownloadedDirName(downloadsDirPath):
     if len(os.listdir(downloadsDirPath)) == 0:
         return None
-    return max (
-        [downloadsDirPath + '/' + f for f in os.listdir(downloadsDirPath)],
-        key=os.path.getctime
-    )
+    for f in os.listdir(downloadsDirPath):
+        if f == today.strftime("%Y-%m-%d"):
+            return True
+    return False
 
 def sendChatworkNotification(message):
     try:
@@ -55,7 +56,7 @@ def getRankingCsvData(csvPath):
         for row in buf:
             yield row
 
-def checkRankingData(folder, datas, message):
+def checkRankingData(folder, datas):
     try:
         SPREADSHEET_ID = os.environ['RANK_DATA_SSID']
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -79,29 +80,38 @@ if __name__ == '__main__':
 
     try:
         rankDataDirPath = os.environ["RANK_DATA_DIR"]
-        dateDirPath = getLatestDownloadedDirName(rankDataDirPath)
-        message = f'[info][title]本日の計測結果 [@{today.strftime("%H:%M")}][/title]'
+        dateDirPath = f'{rankDataDirPath}/{today.strftime("%Y-%m-%d")}'
 
-        if dateDirPath != f'{rankDataDirPath}/{today.strftime("%Y-%m-%d")}':
+        if not checkLatestDownloadedDirName(rankDataDirPath):
+            message = f'[info][title]本日の順位計測結果 [@{today.strftime("%H:%M")}][/title]'
             message += "本日のデータフォルダが生成されておりません。\n担当者は本日の順位計測に問題がないかご確認ください。[/info]"
             sendChatworkNotification(message)
             logger.debug(f'check_ranking_data: 本日のデータフォルダが生成されておりません。')
             exit(0)
 
         config = configparser.ConfigParser()
-        config.read('clientInfo.ini')
+        config.read_file(codecs.open("clientInfo.ini", "r", "utf8"))
         folders = config.sections()
+        NGprojects = []
 
         for folder in folders:
-            if folder == "aimplace.co.jp":
-                continue
             datas = list(getRankingCsvData(f'{dateDirPath}/{folder}.txt'))
-            if checkRankingData(folder, datas, message):
-                message += f'{folder} ✅\n'
-            else:
-                message += f'{folder} 🔥\n'
-        
-        message += '[/info]'
+            if not checkRankingData(folder, datas):
+                NGprojects.append(folder)
+
+        total = len(folders)
+        ng = len(NGprojects)
+        if ng == 0:
+            message = f'[info][title]【本日の順位計測結果】@ {today.strftime("%H:%M")}[/title]'
+            message += f'[ {total} / {total} ] 完了\n'
+            message += 'パーフェクトです。[/info]'
+        else:
+            message = f'[info][title]【本日の順位計測結果】@ {today.strftime("%H:%M")}[/title]'
+            message += f'[ {total - ng} / {total} ] 完了\n'
+            message += f'担当者は再計測対応を行ってください。\n\n'
+            message += ' 🔥\n'.join(NGprojects)
+            message += '[/info]'
+
         sendChatworkNotification(message)
         logger.info("check_ranking_data: Finish")
         exit(0)
