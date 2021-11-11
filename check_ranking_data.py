@@ -62,7 +62,6 @@ def checkRankingData(folder, datas):
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
         credentials = ServiceAccountCredentials.from_json_keyfile_name('spreadsheet.json', scope)
         gc = gspread.authorize(credentials)
-        sheet = gc.open_by_key(SPREADSHEET_ID).worksheet('Rank Data')
 
         for data in datas:
             rdate = datetime.datetime.strptime(data[7], '%b %d, %Y').strftime('%Y/%m/%d')
