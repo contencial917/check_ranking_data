@@ -102,13 +102,15 @@ if __name__ == '__main__':
         ng = len(NGprojects)
         if ng == 0:
             message = f'[info][title]【本日の順位計測結果】@ {today.strftime("%H:%M")}[/title]'
-            message += f'[ {total} / {total} ] 完了\n'
+            message += f'[ {total} / {total} ] 完了 ✅\n'
             message += 'パーフェクトです。[/info]'
         else:
             message = f'[info][title]【本日の順位計測結果】@ {today.strftime("%H:%M")}[/title]'
-            message += f'[ {total - ng} / {total} ] 完了\n'
+            message += f'[ {total - ng} / {total} ] 完了 🔥\n'
             message += f'担当者は再計測対応を行ってください。\n\n'
+            message += ' ▼ 未計測プロジェクト一覧\n'
             message += ' 🔥\n'.join(NGprojects)
+            message += ' 🔥\n'
             message += '[/info]'
 
         sendChatworkNotification(message)
