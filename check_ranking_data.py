@@ -8,7 +8,6 @@ import gspread
 import codecs
 import configparser
 from time import sleep
-from oauth2client.service_account import ServiceAccountCredentials
 
 # Logger setting
 from logging import getLogger, FileHandler, DEBUG
@@ -40,15 +39,6 @@ def sendChatworkNotification(message):
         logger.error(f'Error: sendChatworkNotification: {err}')
         exit(1)
 
-def num2alpha(num):
-    if num<=26:
-        return chr(64+num)
-    elif num%26==0:
-        return num2alpha(num//26-1)+chr(90)
-    else:
-        return num2alpha(num//26)+chr(64+num%26)
-
-### Google ###
 def getRankingCsvData(csvPath):
     with open(csvPath, newline='', encoding='utf-8') as csvfile:
         buf = csv.reader(csvfile, delimiter=',', lineterminator='\r\n', skipinitialspace=True)
@@ -58,11 +48,6 @@ def getRankingCsvData(csvPath):
 
 def checkRankingData(folder, datas):
     try:
-        SPREADSHEET_ID = os.environ['RANK_DATA_SSID']
-        scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name('spreadsheet.json', scope)
-        gc = gspread.authorize(credentials)
-
         for data in datas:
             rdate = datetime.datetime.strptime(data[7], '%b %d, %Y').strftime('%Y/%m/%d')
             if rdate != today.strftime('%Y/%m/%d'):
@@ -71,7 +56,7 @@ def checkRankingData(folder, datas):
         
         return True
     except Exception as err:
-        logger.debug(f'Error: checkUploadData: {err}')
+        logger.debug(f'Error: checkRankingData: {err}')
         exit(1)
 
 ### main_script ###
