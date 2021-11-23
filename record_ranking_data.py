@@ -22,6 +22,16 @@ logger.addHandler(handler)
 logger.propagate = False
 
 ### functions ###
+def sendChatworkNotification(message):
+    try:
+        url = f'https://api.chatwork.com/v2/rooms/{os.environ["CHATWORK_ROOM_ID"]}/messages'
+        headers = { 'X-ChatWorkToken': os.environ["CHATWORK_API_TOKEN"] }
+        params = { 'body': message }
+        requests.post(url, headers=headers, params=params)
+    except Exception as err:
+        logger.error(f'Error: sendChatworkNotification: {err}')
+        exit(1)
+
 def getRankingCsvData(csvPath):
     with open(csvPath, newline='', encoding='utf-8') as csvfile:
         buf = csv.reader(csvfile, delimiter=',', lineterminator='\r\n', skipinitialspace=True)
@@ -110,6 +120,14 @@ if __name__ == '__main__':
 
         last_row_num = len([i for i in sheet.col_values(1) if i])
         sheet.set_basic_filter(name=(f'A1:I{last_row_num}'))
+
+        message = '[info][title]順位計測データ取込[/title]\n'
+        message += '本日の順位計測データを取り込みました。\n'
+        message += '下記リンクから順位計測データをご確認ください。\n\n'
+        message += 'https://docs.google.com/spreadsheets/d/16WCFv8z9ufGtNl_F6I8r9noj8ernC6HQwJwHSc9C3ck/edit?usp=sharing \n'
+        message += '[/info]'
+
+        sendChatworkNotification(message)
  
         logger.info("record_ranking_data: Finish")
         exit(0)
