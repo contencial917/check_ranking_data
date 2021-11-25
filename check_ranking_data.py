@@ -42,19 +42,24 @@ def sendChatworkNotification(message):
 def getRankingCsvData(csvPath):
     with open(csvPath, newline='', encoding='utf-8') as csvfile:
         buf = csv.reader(csvfile, delimiter=',', lineterminator='\r\n', skipinitialspace=True)
-        next(buf)
         for row in buf:
             yield row
 
 def checkRankingData(folder, datas):
     try:
-        for data in datas:
-            rdate = datetime.datetime.strptime(data[7], '%b %d, %Y').strftime('%Y/%m/%d')
+        dateIndex = -1
+        for index, data in enumerate(datas):
+            if index == 0:
+                for i, d in enumerate(data):
+                    if re.search('Date', d):
+                        dateIndex = int(i)
+                continue
+
+            rdate = datetime.datetime.strptime(data[dateIndex], '%b %d, %Y').strftime('%Y/%m/%d')
             if rdate != today.strftime('%Y/%m/%d'):
                 logger.debug(f'checkRankingData: {folder}: NG')
                 return False
-        
-        return True
+            return True
     except Exception as err:
         logger.debug(f'Error: checkRankingData: {err}')
         exit(1)
