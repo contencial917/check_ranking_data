@@ -51,7 +51,7 @@ def checkRankingData(folder, datas):
         for index, data in enumerate(datas):
             if index == 0:
                 for i, d in enumerate(data):
-                    if re.search('Date', d):
+                    if re.search('Date|日付', d):
                         dateIndex = int(i)
                 continue
 
