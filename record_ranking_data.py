@@ -9,6 +9,7 @@ import codecs
 import configparser
 from time import sleep
 from oauth2client.service_account import ServiceAccountCredentials
+#from gspread_formatting import *
 
 # Logger setting
 from logging import getLogger, FileHandler, DEBUG
@@ -38,47 +39,33 @@ def getRankingCsvData(csvPath):
         for row in buf:
             yield row
 
-def recordRankingData(project, datas, sheet):
+def recordRankingData(datas, sheet, day):
     try:
-        global append_list
-        global cnt_append_row
-        global last_row_num
+        key = 0
         ja = 0
         sh = 0
-        mb = 0
-        dja = 0
-        dsh = 0
-        dmb = 0
+        row_count = sheet.row_count
 
+        keywords = sheet.col_values(1)
+        ranking = sheet.range(1, day + 1, row_count, day + 1)
         for index, data in enumerate(datas):
             if index == 0:
                 for i, d in enumerate(data):
-                    if re.search('Mobile', d) and re.search('Rank', d):
+                    if re.search('Keyword|キーワード', d):
+                        key = int(i)
+                    elif re.search('Japan', d) and re.search('Rank|ランキング', d):
                         ja = int(i)
-                    elif re.search('Shibuya', d) and re.search('Rank', d):
-                        sh = int(i) 
-                    elif re.search('Japan', d) and re.search('Rank', d):
-                        mb = int(i)
-                    elif re.search('Mobile', d) and re.search('Date', d):
-                        dja = int(i)
-                    elif re.search('Shibuya', d) and re.search('Date', d):
-                        dmb = int(i)
-                    elif re.search('Japan', d) and re.search('Date', d):
-                        dsh = int(i)
+                    elif re.search('Shibuya', d) and re.search('Rank|ランキング', d):
+                        sh = int(i)
                 continue
-
-            url = 'https://docs.google.com/spreadsheets/d/1LyDPP7Nz0WYm4PnuqOxygG_x3yRGMEzV31eu6JlX2ys/edit'
-            cnt_append_row += 1
-            row = last_row_num + cnt_append_row
-
-            name = f'=FILTER(IMPORTRANGE("{url}", "サイト一覧!C$2:C$300"), IMPORTRANGE("{url}", "サイト一覧!D$2:D$300")=B{row})'
-            rja = datetime.datetime.strptime(data[dja], '%b %d, %Y').strftime('%Y/%m/%d')
-            rsh = datetime.datetime.strptime(data[dsh], '%b %d, %Y').strftime('%Y/%m/%d')
-            rmb = datetime.datetime.strptime(data[dmb], '%b %d, %Y').strftime('%Y/%m/%d')
-            result = [name, project, data[0], data[ja], rja, data[sh], rsh, data[mb], rmb]
-            append_list.extend(result)
-        
-        return True
+            for i, d in enumerate(keywords):
+                if d == data[key]:
+                    if data[sh] == 'トップ圏外 100':
+                        ranking[i].value = '-'
+                    else:
+                        ranking[i].value = data[sh]
+                    break
+        sheet.update_cells(ranking, value_input_option="USER_ENTERED")
     except Exception as err:
         logger.debug(f'Error: recordRankingData: {err}')
         exit(1)
@@ -94,37 +81,24 @@ if __name__ == '__main__':
         config.read_file(codecs.open("clientInfo.ini", "r", "utf8"))
         projects = config.sections()
 
-        SPREADSHEET_ID = os.environ['RANK_DATA_SSID']
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
         credentials = ServiceAccountCredentials.from_json_keyfile_name('spreadsheet.json', scope)
         gc = gspread.authorize(credentials)
-        sheet = gc.open_by_key(SPREADSHEET_ID).worksheet('Rank Data')
-        append_list = []
-        cnt_append_row = 0
-        last_row_num = len([i for i in sheet.col_values(1) if i])
 
         for project in projects:
-            if project == 'aimplace.co.jp':
-                continue
+            SPREADSHEET_ID = config[project]['SSID']
+            sheet = gc.open_by_key(SPREADSHEET_ID).worksheet(today.strftime("%Y%m"))
             datas = list(getRankingCsvData(f'{dateDirPath}/{project}.txt'))
-            recordRankingData(project, datas, sheet)
+            recordRankingData(datas, sheet, int(today.strftime("%d")))
+#            last_row_num = len(list(sheet.col_values(1)))
+#            format_cell_range(sheet, f'A2:AF{last_row_num}', cellFormat(horizontalAlignment='CENTER'))
             logger.debug(f'recordRankingData: {project}')
+            sleep(2)
         
-        print(cnt_append_row)
-
-        sheet.add_rows(cnt_append_row)
-        cell_list = sheet.range(f'A{last_row_num + 1}:I{last_row_num + cnt_append_row}')
-        for index, cell in enumerate(cell_list):
-            cell.value = append_list[index]
-        sheet.update_cells(cell_list, value_input_option='USER_ENTERED')
-
-        last_row_num = len([i for i in sheet.col_values(1) if i])
-        sheet.set_basic_filter(name=(f'A1:I{last_row_num}'))
-
         message = '[info][title]順位計測データ取込[/title]\n'
         message += '本日の順位計測データを取り込みました。\n'
         message += '下記リンクから順位計測データをご確認ください。\n\n'
-        message += 'https://docs.google.com/spreadsheets/d/16WCFv8z9ufGtNl_F6I8r9noj8ernC6HQwJwHSc9C3ck/edit?usp=sharing \n'
+        message += 'https://drive.google.com/drive/folders/1AV70yHGUsYkkbOu1MdxsEzig2aFmYaTb?usp=sharing'
         message += '[/info]'
 
         sendChatworkNotification(message)
