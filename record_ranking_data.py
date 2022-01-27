@@ -93,7 +93,7 @@ if __name__ == '__main__':
 #            last_row_num = len(list(sheet.col_values(1)))
 #            format_cell_range(sheet, f'A2:AF{last_row_num}', cellFormat(horizontalAlignment='CENTER'))
             logger.debug(f'recordRankingData: {project}')
-            sleep(2)
+            sleep(3)
         
         message = '[info][title]順位計測データ取込[/title]\n'
         message += '本日の順位計測データを取り込みました。\n'
