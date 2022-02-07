@@ -1,0 +1,11 @@
+@charset "utf-8";
+/* ==========================================================================
+ WebFont
+============================================================================*/
+//fontFamily
+@import url("https://fonts.googleapis.com/css?family=Noto+Sans+JP:400,700|Roboto:400,700&display=swap&subset=japanese");
+$font-family: "Noto Sans JP", "メイリオ", "Hiragino Kaku Gothic Pro",
+  "ヒラギノ角ゴ Pro W3", sans-serif;
+$font-family-robo: "Roboto", "メイリオ", "Hiragino Kaku Gothic Pro",
+  "ヒラギノ角ゴ Pro W3", sans-serif;
+$font-family-copy: "Verdana", sans-serif;

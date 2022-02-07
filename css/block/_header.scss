@@ -1,0 +1,21 @@
+@charset "UTF-8";
+
+.header {
+  width: 100%;
+  height: 60px;
+
+  .header__inner {
+    width: 90%;
+    height: 100%;
+    margin: 0 auto;
+    border-bottom: 1px solid $clr-bd07;
+    position: relative;
+
+    .header__title {
+      position: absolute;
+      left: 0;
+      bottom: 5px;
+      font-size: 1.8rem;
+    }
+  }
+}

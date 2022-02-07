@@ -1,0 +1,12 @@
+@charset "UTF-8";
+
+html {
+  font-size: 10px;
+}
+
+.body {
+  font-family: $font-family;
+  color: $clr-font01;
+  width: 100%;
+  background-color: $clr-bg02;
+}

@@ -1,0 +1,118 @@
+@charset "UTF-8";
+
+.main {
+  width: 100%;
+  height: calc(100% - 120px);
+
+  .main__inner {
+    width: 90%;
+    height: 100%;
+    margin: 0 auto;
+    padding: 60px 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .main__section.keyword {
+    width: 25%;
+
+    .keyword__list {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 1.5rem;
+      margin-bottom: 50px;
+
+      .keyword__title {
+        width: 25%;
+        line-height: 2.2rem;
+      }
+
+      .keyword__data {
+        width: 75%;
+        line-height: 2.2rem;
+      }
+    }
+
+    .keyword__ranking {
+      width: 100%;
+    }
+
+    .keyword__table {
+      width: 200px;
+
+      .keyword__row {
+        font-size: 1.3rem;
+        line-height: 1.8rem;
+      }
+
+      .keyword__th,
+      .keyword__td {
+        border: 1px solid $clr-bd07;
+        border-collapse: collapse;
+        text-align: center;
+      }
+
+      .keyword__th {
+        background-color: $clr-bg31;
+      }
+    }
+
+    .keyword__supplement {
+      font-size: 1.3rem;
+      margin-top: 5px;
+    }
+  }
+
+  .main__section.graph {
+    width: 70%;
+
+    .graph__title {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    .graph__container {
+      position: relative;
+      width: 100%;
+      height: 90%;
+    }
+
+    .graph__google {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #3f80ef;
+      text-align: right;
+      position: relative;
+    }
+
+    .graph__picture-1 {
+      display: block;
+      background-color: #3f80ef;
+      width: 30px;
+      height: 2px;
+      position: absolute;
+      top: 50%;
+      right: 60px;
+      transform: translateY(-50%);
+      -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+    }
+
+    .graph__picture-2 {
+      display: block;
+      background-color: #3f80ef;
+      width: 8px;
+      height: 8px;
+      border-radius: 100%;
+      position: absolute;
+      top: 50%;
+      right: 70px;
+      transform: translateY(-50%);
+      -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+    }
+  }
+}

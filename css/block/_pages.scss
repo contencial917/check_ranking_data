@@ -1,0 +1,11 @@
+@charset "UTF-8";
+
+.page {
+  width: 1500px;
+  height: 1050px;
+  margin: 0 auto;
+}
+
+.pagebreak {
+  break-after: page;
+}
