@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 spreadsheet.json
+css/style.css
+css/style.css.map
+.DS_Store
