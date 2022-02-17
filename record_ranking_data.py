@@ -23,7 +23,19 @@ logger.addHandler(handler)
 logger.propagate = False
 
 ### functions ###
-def sendChatworkNotification(message):
+def sendChatworkNotification(exit_code):
+    if exit_code == 0:
+        message = '[info][title]順位計測データ取込: ✅[/title]\n'
+        message += '本日の順位計測データを取り込みました。\n'
+        message += '下記リンクから順位計測データをご確認ください。\n\n'
+        message += 'https://drive.google.com/drive/folders/1AV70yHGUsYkkbOu1MdxsEzig2aFmYaTb?usp=sharing'
+        message += '[/info]'
+    else:
+        message = '[info][title]順位計測データ取込: 🔥[/title]\n'
+        message += '本日の順位計測データの取り込みに失敗しました。\n'
+        message += '下記リンクから順位計測データをご確認ください。\n\n'
+        message += 'https://drive.google.com/drive/folders/1AV70yHGUsYkkbOu1MdxsEzig2aFmYaTb?usp=sharing'
+        message += '[/info]'
     try:
         url = f'https://api.chatwork.com/v2/rooms/{os.environ["CHATWORK_ROOM_ID"]}/messages'
         headers = { 'X-ChatWorkToken': os.environ["CHATWORK_API_TOKEN"] }
@@ -67,6 +79,7 @@ def recordRankingData(datas, sheet, day):
                     break
         sheet.update_cells(ranking, value_input_option="USER_ENTERED")
     except Exception as err:
+        sendChatworkNotification(1)
         logger.debug(f'Error: recordRankingData: {err}')
         exit(1)
 
@@ -95,16 +108,11 @@ if __name__ == '__main__':
             logger.debug(f'recordRankingData: {project}')
             sleep(3)
         
-        message = '[info][title]順位計測データ取込[/title]\n'
-        message += '本日の順位計測データを取り込みました。\n'
-        message += '下記リンクから順位計測データをご確認ください。\n\n'
-        message += 'https://drive.google.com/drive/folders/1AV70yHGUsYkkbOu1MdxsEzig2aFmYaTb?usp=sharing'
-        message += '[/info]'
-
-        sendChatworkNotification(message)
+        sendChatworkNotification(0)
  
         logger.info("record_ranking_data: Finish")
         exit(0)
     except Exception as err:
+        sendChatworkNotification(1)
         logger.debug(f'record_ranking_data: {err}')
         exit(1)
