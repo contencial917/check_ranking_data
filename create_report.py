@@ -150,8 +150,8 @@ def createReport(domain, sheet, year, month, output):
 if __name__ == '__main__':
 
     try:
-        year = str(int(today.strftime("%Y")))
-        month = str(int(today.strftime("%m")))
+        year = today.strftime("%Y")
+        month = today.strftime("%m")
 
         output_path = os.environ['RANK_REPORT_PATH']
         os.makedirs(f'{output_path}/{year}/{month}', exist_ok=True)
@@ -185,5 +185,5 @@ if __name__ == '__main__':
         logger.info("create_report: Finish")
         exit(0)
     except Exception as err:
-        logger.debug(f'create_report: {err}')
+        logger.debug(f'Error: create_report: {err}')
         exit(1)
