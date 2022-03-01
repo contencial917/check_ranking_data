@@ -77,7 +77,7 @@
                     fontSize: 15,
                     fontStyle: "bold",
                     reverse: true,
-                    min: 0,
+                    min: 1,
                     max: { max_size },
                     stepSize: { step_size },
                     userCallback: function (tick) {
