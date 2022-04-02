@@ -32,6 +32,113 @@ def sendChatworkNotification(message):
         logger.error(f'Error: sendChatworkNotification: {err}')
         exit(1)
 
+def createPages(domain, year, month, data):
+    date = f'{year}年{month}月'
+    pages = ""
+    total_pages = len(data)
+    for index, item in enumerate(data):
+        out_of_range_flag = False
+        ranking_table = ""
+        ranking_data = ""
+        out_of_range = ""
+        labels = ""
+        best = 101
+        worst = -1
+        max_size = 0
+        step_size = 0
+        sum_rank = 0
+        sum_days = 0
+        keyword = item.pop(0)
+
+        for i, d in enumerate(item):
+            ranking_table += '<tr class="keyword__row">\n'\
+                            f'<td class="keyword__td">{year}/{month}/{str(i + 1)}</td>\n'\
+                            f'<td class="keyword__td">{d}</td>\n'\
+                            '</tr>\n'
+
+            if d == "-":
+                ranking_data += '150,'
+                out_of_range = '<p class="keyword__supplement">ー...範囲外 </p>'
+                sum_rank += 101
+                worst = 101
+            else:
+                ranking_data += f'{d},'
+                rank = int(d)
+                if rank < best:
+                    best = rank
+                if rank > worst:
+                    worst = rank
+                sum_rank += rank
+
+            if i == 0 or (i + 1) % 5 == 0:
+                labels += f'"{month}/{i + 1}",'
+            else:
+                labels += '"",'
+
+            sum_days += 1
+
+        ranking_table += '<tr class="keyword__row">\n'\
+                        '<td class="keyword__td">最高</td>\n'
+        if best == 101:
+            ranking_table += '<td class="keyword__td">-</td>\n'
+        else:
+            ranking_table += f'<td class="keyword__td">{best}</td>\n'
+        ranking_table += '</tr>\n'\
+                        '<tr class="keyword__row">\n'\
+                        '<td class="keyword__td">最低</td>\n'
+        if worst == -1 or worst == 101:
+            ranking_table += '<td class="keyword__td">-</td>\n'
+        else:
+            ranking_table += f'<td class="keyword__td">{worst}</td>\n'
+        ranking_table += '</tr>\n'\
+                        '<tr class="keyword__row">\n'\
+                        '<td class="keyword__td">平均</td>\n'
+        average = int(sum_rank / sum_days)
+        if average >= 100:
+            ranking_table += '<td class="keyword__td">-</td>\n'
+        else:
+            ranking_table += f'<td class="keyword__td">{average}</td>\n'
+        ranking_table += '</tr>\n'
+
+        if worst == -1 or worst > 50:
+            max_size = 100
+            step_size = 20
+        elif worst <= 10:
+            max_size = 10
+            step_size = 1
+        elif worst <= 20:
+            max_size = 20
+            step_size = 5
+        elif worst <= 50:
+            max_size = 50
+            step_size = 10
+
+        with open('./template/section.tpl', 'r', encoding='utf_8') as f:
+            page = f.read()
+
+        page = page.replace('{ domain }', domain)
+        page = page.replace('{ keyword }', keyword)
+        page = page.replace('{ ranking_table }', ranking_table)
+        page = page.replace('{ out_of_range }', out_of_range)
+        page = page.replace('{ date }', date)
+        page = page.replace('{ labels }', labels.strip(','))
+        page = page.replace('{ ranking_data }', ranking_data.strip(','))
+        page = page.replace('{ max_size }', str(max_size))
+        page = page.replace('{ step_size }', str(step_size))
+        page = page.replace('{ total_pages }', str(total_pages))
+        page = page.replace('{ page_no }', str(index + 1))
+
+        pages += page
+
+    return pages
+
+def createFile(pages, output, domain):
+    with open('./template/body.tpl', 'r', encoding='utf_8') as f:
+        html = f.read()
+    html = html.replace('{ pages }', pages)
+    with open(f'{output}/{domain}.html', 'w', newline='', encoding='utf_8') as f:
+        f.write(html)
+
 def createReport(domain, sheet, year, month, output):
     try:
         data = sheet.get_all_values()
@@ -39,109 +146,14 @@ def createReport(domain, sheet, year, month, output):
         data.pop(0)
         data.pop(0)
 
-        date = f'{year}年{month}月'
-        pages = ""
-        total_pages = len(data)
-        for index, item in enumerate(data):
-            out_of_range_flag = False
-            ranking_table = ""
-            ranking_data = ""
-            out_of_range = ""
-            labels = ""
-            best = 101 
-            worst = -1
-            max_size = 0
-            step_size = 0
-            sum_rank = 0
-            sum_days = 0
-            keyword = item.pop(0) 
+        if domain == "wakigacenter.com":
+            lst = data.pop(0)
+            pages = createPages(domain, year, month, [lst])
+            createFile(pages, output, f'{domain}_kodomo-wakiga')
 
-            for i, d in enumerate(item):
-                ranking_table += '<tr class="keyword__row">\n'\
-                                f'<td class="keyword__td">{year}/{month}/{str(i + 1)}</td>\n'\
-                                f'<td class="keyword__td">{d}</td>\n'\
-                                '</tr>\n'
+        pages = createPages(domain, year, month, data)
+        createFile(pages, output, domain)
 
-                if d == "-":
-                    ranking_data += '150,'
-                    out_of_range = '<p class="keyword__supplement">ー...範囲外 </p>'
-                    sum_rank += 101
-                    worst = 101
-                else:
-                    ranking_data += f'{d},'
-                    rank = int(d)
-                    if rank < best:
-                        best = rank
-                    if rank > worst:
-                        worst = rank
-                    sum_rank += rank
-
-                if i == 0 or (i + 1) % 5 == 0:
-                    labels += f'"{month}/{i + 1}",'
-                else:
-                    labels += '"",'
-                
-                sum_days += 1
-
-            ranking_table += '<tr class="keyword__row">\n'\
-                            '<td class="keyword__td">最高</td>\n'
-            if best == 101:
-                ranking_table += '<td class="keyword__td">-</td>\n'
-            else:
-                ranking_table += f'<td class="keyword__td">{best}</td>\n'
-            ranking_table += '</tr>\n'\
-                            '<tr class="keyword__row">\n'\
-                            '<td class="keyword__td">最低</td>\n'
-            if worst == -1 or worst == 101:
-                ranking_table += '<td class="keyword__td">-</td>\n'
-            else:
-                ranking_table += f'<td class="keyword__td">{worst}</td>\n'
-            ranking_table += '</tr>\n'\
-                            '<tr class="keyword__row">\n'\
-                            '<td class="keyword__td">平均</td>\n'
-            average = int(sum_rank / sum_days)
-            if average >= 100:
-                ranking_table += '<td class="keyword__td">-</td>\n'
-            else:
-                ranking_table += f'<td class="keyword__td">{average}</td>\n'
-            ranking_table += '</tr>\n'
-            
-            if worst == -1 or worst > 50:
-                max_size = 100
-                step_size = 20
-            elif worst <= 10:
-                max_size = 10
-                step_size = 1
-            elif worst <= 20:
-                max_size = 20
-                step_size = 5
-            elif worst <= 50:
-                max_size = 50
-                step_size = 10
-            
-            with open('./template/section.tpl', 'r', encoding='utf_8') as f:
-                page = f.read()
-
-            page = page.replace('{ domain }', domain)
-            page = page.replace('{ keyword }', keyword)
-            page = page.replace('{ ranking_table }', ranking_table)
-            page = page.replace('{ out_of_range }', out_of_range)
-            page = page.replace('{ date }', date)
-            page = page.replace('{ labels }', labels.strip(','))
-            page = page.replace('{ ranking_data }', ranking_data.strip(','))
-            page = page.replace('{ max_size }', str(max_size))
-            page = page.replace('{ step_size }', str(step_size))
-            page = page.replace('{ total_pages }', str(total_pages))
-            page = page.replace('{ page_no }', str(index + 1))
-
-            pages += page
-    
-        with open('./template/body.tpl', 'r', encoding='utf_8') as f:
-            html = f.read()
-        html = html.replace('{ pages }', pages)
-        with open(f'{output}/{domain}.html', 'w', newline='', encoding='utf_8') as f:
-            f.write(html)
-            
     except Exception as err:
         logger.debug(f'Error: create_report: {err}')
         exit(1)
