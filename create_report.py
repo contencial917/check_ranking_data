@@ -150,14 +150,15 @@ def createReport(domain, sheet, year, month, output):
 if __name__ == '__main__':
 
     try:
-        year = today.strftime("%Y")
-        month = today.strftime("%m")
+        thismonth = datetime.datetime(today.year, today.month, 1)
+        lastmonth = thismonth + datetime.timedelta(days=-1)
+        year = lastmonth.strftime("%Y")
+        month = lastmonth.strftime("%m")
 
         output_path = os.environ['RANK_REPORT_PATH']
         os.makedirs(f'{output_path}/{year}/{month}', exist_ok=True)
 
         rankDataDirPath = os.environ["RANK_DATA_DIR"]
-        dateDirPath = f'{rankDataDirPath}/{today.strftime("%Y-%m-%d")}'
 
         config = configparser.ConfigParser()
         config.read_file(codecs.open("clientInfo.ini", "r", "utf8"))
