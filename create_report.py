@@ -41,6 +41,7 @@ def createReport(domain, sheet, year, month, output):
 
         date = f'{year}年{month}月'
         pages = ""
+        total_pages = len(data)
         for index, item in enumerate(data):
             out_of_range_flag = False
             ranking_table = ""
@@ -54,7 +55,6 @@ def createReport(domain, sheet, year, month, output):
             sum_rank = 0
             sum_days = 0
             keyword = item.pop(0) 
-            total_pages = len(item)
 
             for i, d in enumerate(item):
                 ranking_table += '<tr class="keyword__row">\n'\
