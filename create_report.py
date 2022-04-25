@@ -161,9 +161,20 @@ def createReport(domain, sheet, year, month, output):
 ### main_script ###
 if __name__ == '__main__':
 
+    if len(sys.argv) == 1:
+        logger.debug('No parameter')
+        exit(1)
+
+    param = int(sys.argv[1])
+
     try:
         thismonth = datetime.datetime(today.year, today.month, 1)
-        lastmonth = thismonth + datetime.timedelta(days=-1)
+
+        if param == 1:
+            lastmonth = thismonth + datetime.timedelta(days=-1)
+        else:
+            lastmonth = thismonth
+
         year = lastmonth.strftime("%Y")
         month = lastmonth.strftime("%m")
 
