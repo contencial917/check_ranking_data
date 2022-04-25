@@ -34,6 +34,7 @@ def sendChatworkNotification(message):
         exit(1)
 
 def createPages(domain, year, month, data):
+    global param
     date = f'{year}年{month}月'
     pages = ""
     total_pages = len(data)
@@ -58,6 +59,11 @@ def createPages(domain, year, month, data):
                             '</tr>\n'
 
             if d == "-":
+                ranking_data += '150,'
+                out_of_range = '<p class="keyword__supplement">ー...範囲外 </p>'
+                sum_rank += 101
+                worst = 101
+            elif param == 0 and d == "":
                 ranking_data += '150,'
                 out_of_range = '<p class="keyword__supplement">ー...範囲外 </p>'
                 sum_rank += 101
