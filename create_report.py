@@ -206,9 +206,9 @@ if __name__ == '__main__':
             sleep(3)
         
         message = '[info][title]順位計測結果 出力完了[/title]\n'
-        message += '今月の順位計測結果の出力が完了しました。\n'
+        message += '順位計測結果の出力が完了しました。\n'
         message += 'Dropboxの下記ディレクトリから順位計測結果をご確認ください。\n\n'
-        message += f'/順位計測結果レポート/{year}/{month}/'
+        message += f'/Rank_Result_Report/{year}/{month}/'
         message += '[/info]'
 
         sendChatworkNotification(message)
